@@ -76,6 +76,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create temporary .env for CI validation
+        run: |
+          cat > .env <<'EOF'
+          POSTGRES_DB=myapp
+          POSTGRES_USER=myappuser
+          POSTGRES_PASSWORD=mypassword
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=myapp
+          DB_USER=myappuser
+          DB_PASSWORD=mypassword
+          EOF
+
       - name: Validate docker compose config
         run: docker compose config
 
@@ -103,6 +116,21 @@ jobs:
         run: |
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Create runtime .env on server
+        run: |
+          ssh -i ~/.ssh/devops-terraform-key ubuntu@${{ secrets.EC2_HOST }} '
+            cat > /opt/devops-docker-platform/compose/.env <<EOF
+            POSTGRES_DB=myapp
+            POSTGRES_USER=myappuser
+            POSTGRES_PASSWORD=mypassword
+            DB_HOST=postgres
+            DB_PORT=5432
+            DB_NAME=myapp
+            DB_USER=myappuser
+            DB_PASSWORD=mypassword
+            EOF
+          '
+
       - name: Copy app files
         run: |
           scp -i ~/.ssh/devops-terraform-key -r app ubuntu@${{ secrets.EC2_HOST }}:/opt/devops-docker-platform/
@@ -114,6 +142,21 @@ jobs:
       - name: Copy compose files
         run: |
           scp -i ~/.ssh/devops-terraform-key -r compose ubuntu@${{ secrets.EC2_HOST }}:/opt/devops-docker-platform/
+
+      - name: Recreate runtime .env after copy
+        run: |
+          ssh -i ~/.ssh/devops-terraform-key ubuntu@${{ secrets.EC2_HOST }} '
+            cat > /opt/devops-docker-platform/compose/.env <<EOF
+            POSTGRES_DB=myapp
+            POSTGRES_USER=myappuser
+            POSTGRES_PASSWORD=mypassword
+            DB_HOST=postgres
+            DB_PORT=5432
+            DB_NAME=myapp
+            DB_USER=myappuser
+            DB_PASSWORD=mypassword
+            EOF
+          '
 
       - name: Deploy stack
         run: |
