@@ -1,0 +1,6 @@
+aws_region      = "us-east-1"
+project_name    = "devops-docker-platform"
+environment     = "dev"
+instance_type   = "t3.micro"
+public_key_path = "~/.ssh/devops-terraform-key.pub"
+my_ip_cidr      = "72.255.58.140/32"

@@ -1,0 +1,5 @@
+app_base_dir: /opt/devops-docker-platform
+compose_dir: /opt/devops-docker-platform/compose
+nginx_dir: /opt/devops-docker-platform/nginx
+app_dir: /opt/devops-docker-platform/app
+project_name: devops-docker-platform
